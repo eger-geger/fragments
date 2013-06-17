@@ -1,5 +1,6 @@
 package net.thucidides.fragments.elements;
 
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.pagefactory.ElementLocator;
 
@@ -28,7 +29,7 @@ public class Select extends Fragment {
 		delegate().deselectByValue(value);
 	}
 
-	public void deselectBContextyVisibleText(String text) {
+	public void deselectByVisibleText(String text) {
 		publishEvent(String.format("deselecting option with text [%s]", text));
 		delegate().deselectByVisibleText(text);
 	}
@@ -96,4 +97,9 @@ public class Select extends Fragment {
 		publishEvent(String.format("selecting option with text [%s]", text));
 		delegate().selectByVisibleText(text);
 	}
+
+    public void selectByPartialText(String text){
+        publishEvent(String.format("selecting option with text[%s]", text));
+        findFragment(By.xpath(String.format("./option[contains(text(), '%s')]", text))).jsClick();
+    }
 }
