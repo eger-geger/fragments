@@ -20,12 +20,12 @@ public class PageWithFragments extends PageObject implements IFragmentContext, S
 	/**
 	 * Injected with {@link FragmentFactory}
 	 */
-	private final FragmentFactory fragmentFactory = null;
+	private FragmentFactory fragmentFactory;
 	
 	/**
 	 * Injected with {@link FragmentFactory}
 	 */
-	private final String contextName = null;
+	private String contextName;
 	
 	public PageWithFragments(WebDriver webDriver, final Injector injector){
 		super(webDriver, new Predicate<PageObject>() {

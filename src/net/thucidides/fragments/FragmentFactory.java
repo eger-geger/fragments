@@ -94,7 +94,7 @@ public class FragmentFactory {
 				.set(PageWithFragments.class, PAGE_FIELD_NAME, page.getClass().getSimpleName())
 			.assign(page);
 		} catch (IllegalAccessException | NoSuchFieldException | SecurityException ex) {
-			throw new RuntimeException("Failed to inject fields into frgament context.", ex);
+			throw new RuntimeException("Failed to inject fields into fragment context.", ex);
 		}
 		
 		decorateFields(page, PageWithFragments.class, 
@@ -148,6 +148,7 @@ public class FragmentFactory {
 		try{
 			while(currentType != archetype){
 				for(Field field: currentType.getDeclaredFields()){
+                    field.setAccessible(true);
 					field.set(fragmentContext, decorator.decorate(ClassLoader.getSystemClassLoader(), field));
 				}
 				currentType = currentType.getSuperclass();
