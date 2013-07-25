@@ -40,7 +40,7 @@ public abstract class PropertyLocatorResolver implements ILocatorResolver {
         Matcher locatorMatcher = LOCATOR_PATTERN.matcher(locator);
 
         if (locatorMatcher.matches()) {
-            return buildBy(convertHow(locatorMatcher.group(1)), convertUsing(locatorMatcher.group(2)));
+            return buildBy(howValueOf(locatorMatcher.group(1)), locatorMatcher.group(2).trim());
         }
 
         if (NOT_AVAILABLE_PATTERN.matcher(locator).matches()) {
@@ -50,11 +50,7 @@ public abstract class PropertyLocatorResolver implements ILocatorResolver {
         throw new IllegalArgumentException(String.format("Incorrect locators syntax [%s].", locator));
     }
 
-    private static String convertUsing(String string) {
-        return string.trim().toLowerCase();
-    }
-
-    private static How convertHow(String string) {
+    private static How howValueOf(String string) {
         return Enum.valueOf(How.class, string.trim().toUpperCase());
     }
 
