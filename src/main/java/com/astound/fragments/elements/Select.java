@@ -1,14 +1,20 @@
 package com.astound.fragments.elements;
 
+import com.astound.fragments.PageContext;
 import org.openqa.selenium.By;
+import org.openqa.selenium.SearchContext;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.pagefactory.ElementLocator;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
 public class Select extends Fragment {
+
+    public Select(PageContext pageContext) {
+        super(pageContext);
+    }
 
     private org.openqa.selenium.support.ui.Select delegate() {
         return new org.openqa.selenium.support.ui.Select(getWrappedElement());
@@ -34,20 +40,24 @@ public class Select extends Fragment {
         delegate().deselectByVisibleText(text);
     }
 
-    public <E extends Fragment<?>> Collection<E> getAllSelectedOptions(Class<E> clazz) {
-        return fragmentFactory.createList(clazz, new ElementLocator() {
-            public List<WebElement> findElements() { return delegate().getAllSelectedOptions(); }
-
-            public WebElement findElement() { return null; }
-        }, getName() + "-selected-option-");
+    public <E extends Fragment> Collection<E> getAllSelectedOptions(Class<E> eClass) {
+        return findFragments(new By() {
+            @Override public List<WebElement> findElements(SearchContext searchContext) {
+                return delegate().getAllSelectedOptions();
+            }
+        }, eClass, getName() + "-selected-option-");
     }
 
-    public <E extends Fragment<?>> E getFirstSelectedOption(Class<E> clazz) {
-        return fragmentFactory.createFragment(clazz, new ElementLocator() {
-            public List<WebElement> findElements() { return null; }
+    public <E extends Fragment> E getFirstSelectedOption(Class<E> aClass) {
+        return (E) findFragment(new By() {
+            @Override public WebElement findElement(SearchContext context) {
+                return delegate().getFirstSelectedOption();
+            }
 
-            public WebElement findElement() { return delegate().getFirstSelectedOption(); }
-        }, getName() + "-selected-option-1");
+            @Override public List<WebElement> findElements(SearchContext searchContext) {
+                return Arrays.asList(delegate().getFirstSelectedOption());
+            }
+        }, aClass, getName() + "-selected-option-1");
     }
 
     public List<String> getSelectedOptionsText() {
@@ -74,12 +84,12 @@ public class Select extends Fragment {
         return options;
     }
 
-    public <E extends Fragment<?>> Collection<E> getOptions(Class<E> clazz) {
-        return fragmentFactory.createList(clazz, new ElementLocator() {
-            public List<WebElement> findElements() { return delegate().getOptions(); }
-
-            public WebElement findElement() { return null; }
-        }, getName() + "-option");
+    public <E extends Fragment> List<E> getOptions(Class<E> aClass) {
+        return findFragments(new By() {
+            @Override public List<WebElement> findElements(SearchContext searchContext) {
+                return delegate().getOptions();
+            }
+        }, aClass, getName() + "-option");
     }
 
     public boolean isMultiple() {

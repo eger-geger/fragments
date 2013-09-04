@@ -1,30 +1,55 @@
 package com.astound.fragments.elements;
 
-import com.astound.fragments.FragmentSettings;
+import com.astound.fragments.PageContext;
 import com.google.common.base.Predicate;
-import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.FluentWait;
-
-import java.util.concurrent.TimeUnit;
 
 public class CheckBox extends Fragment {
 
-    public void set(final boolean state) {
+    private static final String JS_PROPERTY_CHECKED = "checked";
+
+    private static final Predicate<WebElement> IS_CHECKED = new Predicate<WebElement>() {
+        @Override public boolean apply(WebElement input) {
+            if (input.isSelected()) { return true; }
+            input.click();
+            return input.isSelected();
+        }
+    };
+
+    private static final Predicate<WebElement> IS_NOT_CHECKED = new Predicate<WebElement>() {
+        @Override public boolean apply(WebElement input) {
+            if (!input.isSelected()) { return true; }
+            input.click();
+            return !input.isSelected();
+        }
+    };
+
+    public CheckBox(PageContext pageContext) {
+        super(pageContext);
+    }
+
+    public void setState(boolean state) {
         publishEvent(state ? "checking" : "unchecking");
+        waitUntil(5, state ? IS_CHECKED : IS_NOT_CHECKED);
+    }
 
-        new FluentWait<WebElement>(this)
-                .pollingEvery(500, TimeUnit.MILLISECONDS)
-                .withTimeout(FragmentSettings.getInstance().getImplicitWait(), TimeUnit.MILLISECONDS)
-                .ignoring(WebDriverException.class)
-                .until(new Predicate<WebElement>() {
-                    public boolean apply(WebElement element) {
-                        if (state == element.isSelected()) { return true; }
+    public void setChecked() {
+        setState(true);
+    }
 
-                        element.click();
+    public void setUnChecked() {
+        setState(false);
+    }
 
-                        return state == element.isSelected();
-                    }
-                });
+    public void setStateWithJS(boolean state) {
+        setProperty(JS_PROPERTY_CHECKED, state);
+    }
+
+    public void setCheckedWithJS() {
+        setStateWithJS(true);
+    }
+
+    public void setUnCheckedWithJS() {
+        setStateWithJS(false);
     }
 }

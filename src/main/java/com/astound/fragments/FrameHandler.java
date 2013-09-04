@@ -1,20 +1,23 @@
 package com.astound.fragments;
 
 import com.astound.fragments.elements.Fragment;
-
-import static com.astound.fragments.utils.PageUtils.getParentPage;
+import org.openqa.selenium.WebDriver;
 
 public abstract class FrameHandler<T extends Fragment> {
 
+    private final WebDriver webDriver;
+
+    protected FrameHandler(WebDriver webDriver) {
+        this.webDriver = webDriver;
+    }
+
     protected abstract void doPerform(T frame);
 
-    public void performAction(T frame) {
-        PageWithFragments page = getParentPage(frame);
-
-        page.switchToFrame(frame);
+    public void perform(T frame) {
+        webDriver.switchTo().frame(frame.getWrappedElement());
 
         doPerform(frame);
 
-        page.switchToPage();
+        webDriver.switchTo().defaultContent();
     }
 }

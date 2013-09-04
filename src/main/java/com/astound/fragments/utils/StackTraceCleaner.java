@@ -4,13 +4,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class StackTraceUtils {
+public class StackTraceCleaner {
 
     private final static String[] TRASH_PACKAGES = new String[]{
-            "sun.reflect", "java.lang.reflect", "java.util.concurrent",
-            "org.openqa.selenium",
-            "net.thucidides.fragments.proxy", "net.thucidides.fragments.utils"
+            "sun.reflect", "java.lang", "java.util",
+            "org.openqa.selenium", "com.astound.fragments",
     };
+
+    /**
+     * Empty
+     */
+    private StackTraceCleaner() {}
 
     public static Throwable cleanStackTrace(Throwable throwable) {
         List<StackTraceElement> effectiveStackTrace =

@@ -1,19 +1,14 @@
-package com.astound.fragments.annotation;
+package com.astound.fragments.locators;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
- * Use for handling frames.
- *
- * @author eger
- */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Frame {
-    /**
-     * Marker annotation.
-     */
+public @interface FindByString {
+
+    public String value();
+
 }

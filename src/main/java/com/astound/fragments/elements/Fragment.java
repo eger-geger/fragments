@@ -1,14 +1,7 @@
 package com.astound.fragments.elements;
 
-import com.astound.fragments.FragmentFactory;
-import com.astound.fragments.FragmentSettings;
-import com.astound.fragments.IFragmentContext;
-import com.astound.fragments.PageWithFragments;
-import com.astound.fragments.events.FragmentEvent;
-import com.astound.fragments.events.FragmentEventBus;
-import com.astound.fragments.locators.DefaultElementLocator;
+import com.astound.fragments.PageContext;
 import com.astound.fragments.utils.JSActions;
-import com.astound.fragments.utils.PageUtils;
 import com.google.common.base.Predicate;
 import org.openqa.selenium.*;
 import org.openqa.selenium.internal.WrapsElement;
@@ -19,121 +12,108 @@ import java.util.concurrent.TimeUnit;
 
 import static com.astound.fragments.utils.XPathFunctions.containstext;
 
-public class Fragment<Parent extends IFragmentContext> implements WebElement, WrapsElement, IFragmentContext {
+public class Fragment<Parent extends PageContext> implements WebElement, WrapsElement, PageContext {
 
-    /**
-     * Injected with {@link com.astound.fragments.FragmentFactory}
-     */
-    protected final FragmentFactory fragmentFactory = null;
+    private static final Predicate<WebElement> IS_VISIBLE = new Predicate<WebElement>() {
+        @Override public boolean apply(WebElement input) { return input.isDisplayed(); }
+    };
 
-    /**
-     * Injected with {@link FragmentFactory}
-     */
-    private final WebElement wrapped = null;
+    private static final Predicate<WebElement> IS_HIDDEN = new Predicate<WebElement>() {
+        @Override public boolean apply(WebElement input) { return !input.isDisplayed(); }
+    };
 
-    /**
-     * Injected with {@link FragmentFactory}
-     */
-    private final Parent parent = null;
+    private final PageContext wrappedContext;
 
-    /**
-     * Injected with {@link FragmentFactory}
-     */
-    private final String locator = null;
+    private final WebElement wrappedElement;
 
-    /**
-     * Injected with {@link FragmentFactory}
-     */
-    private final String contextName = null;
+    protected final JSActions jsActions;
 
-    public String getName() { return contextName; }
-
-    public WebElement findElement(By by) {
-        return wrapped.findElement(by);
+    public Fragment(PageContext pageContext) {
+        wrappedContext = pageContext;
+        wrappedElement = pageContext.findElement(By.xpath("."));
+        jsActions = new JSActions(this);
     }
 
-    public List<WebElement> findElements(By by) {
-        return wrapped.findElements(by);
+    @Override public String getName() {return wrappedContext.getName();}
+
+    @Override public Fragment findFragment(By by) {return wrappedContext.findFragment(by);}
+
+    @Override public List<Fragment> findFragments(By by) {return wrappedContext.findFragments(by);}
+
+    @Override public <E extends Fragment> E findFragment(By by, Class<E> aClass) {return wrappedContext.findFragment(by, aClass);}
+
+    @Override public <E extends Fragment> List<E> findFragments(By by, Class<E> aClass) {return wrappedContext.findFragments(by, aClass);}
+
+    @Override public <E extends Fragment> E findFragment(By by, Class<E> aClass, String name) {
+        return wrappedContext.findFragment(by, aClass, name);
     }
 
-    public Fragment findFragment(By by) {
-        return findFragment(by, Fragment.class);
+    @Override public <E extends Fragment> List<E> findFragments(By by, Class<E> aClass, String name) {
+        return wrappedContext.findFragments(by, aClass, name);
     }
 
-    public <E extends Fragment<?>> E findFragment(By by, Class<E> type) {
-        return findFragment(by, type, by.toString());
-    }
+    @Override public List<WebElement> findElements(By by) {return wrappedContext.findElements(by);}
 
-    public <E extends Fragment<?>> E findFragment(By by, Class<E> type, String name) {
-        return fragmentFactory.createFragment(type, new DefaultElementLocator(wrapped, by), name);
-    }
+    @Override public WebElement findElement(By by) {return wrappedContext.findElement(by);}
 
-    public List<Fragment> findFragments(By by) {
-        return findFragments(by, Fragment.class);
-    }
+    @Override public Object executeScript(String script, Object... args) {return wrappedContext.executeScript(script, args);}
 
-    public <E extends Fragment<?>> List<E> findFragments(By by, Class<E> type) {
-        return findFragments(by, type, by.toString());
-    }
+    @Override public Object executeAsyncScript(String script, Object... args) {return wrappedContext.executeAsyncScript(script, args);}
 
-    public <E extends Fragment<?>> List<E> findFragments(By by, Class<E> type, String name) {
-        return fragmentFactory.createList(type, new DefaultElementLocator(wrapped, by), name);
-    }
+    public String getHtml() { return jsActions.getHtml(getWrappedElement()); }
 
-    public Parent getParent() { return parent; }
-
-    public String getLocator() { return locator; }
-
-    public String getHtml() { return JSActions.getHtml(this); }
-
-    public String getTextContent() { return JSActions.getTextContent(this); }
+    public String getTextContent() { return jsActions.getTextContent(getWrappedElement()); }
 
     public void setAttribute(String attributeName, String attributeValue) {
         publishEvent(String.format("setting attribute [%s] with [%s]", attributeName, attributeValue));
-        JSActions.setAttribute(this, attributeName, attributeValue);
+        jsActions.setAttribute(getWrappedElement(), attributeName, attributeValue);
     }
 
     public void removeAttribute(String attributeName) {
         publishEvent(String.format("removing attribute [%s]", attributeName));
-        JSActions.removeAttribute(this, attributeName);
+        jsActions.removeAttribute(getWrappedElement(), attributeName);
     }
 
-    public String getAttribute(String attributeName) { return JSActions.getAttribute(this, attributeName); }
+    @Override public String getAttribute(String attributeName) { return jsActions.getAttribute(getWrappedElement(), attributeName); }
 
-    public String getProperty(String propertyName) { return JSActions.getProperty(this, propertyName); }
+    public String getProperty(String propertyName) { return jsActions.getProperty(getWrappedElement(), propertyName); }
 
-    public void click() {
+    public void setProperty(String property, Object value) {
+        jsActions.setProperty(getWrappedElement(), property, value);
+    }
+
+    @Override public void click() {
         publishEvent("click");
-        wrapped.click();
+        wrappedElement.click();
     }
 
     public void jsClick() {
         publishEvent("click with JS");
-        JSActions.click(this);
+        jsActions.click(getWrappedElement());
     }
 
-    public void submit() { wrapped.submit(); }
+    @Override public void submit() { wrappedElement.submit(); }
 
-    public void sendKeys(CharSequence... keysToSend) { wrapped.sendKeys(keysToSend); }
+    @Override public void sendKeys(CharSequence... keysToSend) { wrappedElement.sendKeys(keysToSend); }
 
-    public void clear() {
+    @Override public void clear() {
         sendKeys(Keys.CONTROL + "a", Keys.DELETE);
-        wrapped.clear();
+        wrappedElement.clear();
     }
 
-    public String getTagName() { return wrapped.getTagName(); }
+    @Override public String getTagName() { return wrappedElement.getTagName(); }
 
-    public boolean isSelected() { return wrapped.isSelected(); }
+    @Override public boolean isSelected() { return wrappedElement.isSelected(); }
 
-    public boolean isEnabled() { return wrapped.isEnabled(); }
+    @Override public boolean isEnabled() { return wrappedElement.isEnabled(); }
 
-    public String getText() { return wrapped.getText(); }
+    @Override public String getText() { return wrappedElement.getText(); }
 
     public boolean isPresent() {
         publishEvent("checking if element is present");
 
         try {
-            wrapped.getLocation();
+            wrappedElement.getLocation();
         } catch (WebDriverException ex) {
             return false;
         }
@@ -141,61 +121,49 @@ public class Fragment<Parent extends IFragmentContext> implements WebElement, Wr
         return true;
     }
 
-    public boolean isDisplayed() {
-        publishEvent("checking if element is visible");
-        return isPresent() && wrapped.isDisplayed();
+    @Override public boolean isDisplayed() {
+        boolean isDisplayed = isPresent() && wrappedElement.isDisplayed();
+
+        publishEvent(String.format("Element [%s] is [%s]", getName(), isDisplayed ? "visible" : "hidden"));
+
+        return isDisplayed;
     }
 
-    public Point getLocation() { return wrapped.getLocation(); }
-
-    public Dimension getSize() { return wrapped.getSize(); }
-
-    public String getCssValue(String propertyName) { return wrapped.getCssValue(propertyName); }
-
-    public WebElement getWrappedElement() {
-        return wrapped instanceof WrapsElement ? ((WrapsElement) wrapped).getWrappedElement() : wrapped;
+    @Override public Point getLocation() {
+        return wrappedElement.getLocation();
     }
 
-    public void waitForHide(int timeout) {
-        publishEvent(String.format("wait until hide for [%s] seconds", timeout));
+    @Override public Dimension getSize() {
+        return wrappedElement.getSize();
+    }
 
-        PageWithFragments parentPage = PageUtils.getParentPage(this);
+    @Override public String getCssValue(String propertyName) {
+        return wrappedElement.getCssValue(propertyName);
+    }
 
-        parentPage.setImplicitWait(500, TimeUnit.MILLISECONDS);
+    @Override public WebElement getWrappedElement() {
+        return wrappedElement instanceof WrapsElement ? ((WrapsElement) wrappedElement).getWrappedElement() : wrappedElement;
+    }
 
+    public void waitUntil(int timeoutInSeconds, Predicate<WebElement> condition) {
         new FluentWait<WebElement>(this)
-                .pollingEvery(500, TimeUnit.MILLISECONDS)
-                .withTimeout(timeout, TimeUnit.SECONDS)
+                .pollingEvery(1, TimeUnit.SECONDS)
+                .withTimeout(timeoutInSeconds, TimeUnit.SECONDS)
+                .withMessage(String.format("[%s] failed", condition))
                 .ignoring(WebDriverException.class)
-                .until(new Predicate<WebElement>() {
-
-                    public boolean apply(WebElement element) {
-                        return !element.isDisplayed();
-                    }
-
-                });
-
-        parentPage.setImplicitWait(FragmentSettings.getInstance().getImplicitWait(), TimeUnit.MILLISECONDS);
+                .until(condition);
     }
 
-    public void waitForVisible(int timeout) {
-        publishEvent(String.format("wait until visible for [%s] seconds", timeout));
+    public void waitForHide(int seconds) {
+        publishEvent(String.format("Wait for [%s] until element [%s] became hidden", seconds));
 
-        PageWithFragments parentPage = PageUtils.getParentPage(this);
+        waitUntil(seconds, IS_HIDDEN);
+    }
 
-        parentPage.setImplicitWait(500, TimeUnit.MILLISECONDS);
+    public void waitForVisible(int seconds) {
+        publishEvent(String.format("Wait for [%s] seconds until element [%s] became visible", seconds, getName()));
 
-        new FluentWait<WebElement>(this)
-                .pollingEvery(500, TimeUnit.MILLISECONDS)
-                .withTimeout(timeout, TimeUnit.SECONDS)
-                .ignoring(WebDriverException.class)
-                .until(new Predicate<WebElement>() {
-                    public boolean apply(WebElement element) {
-                        return element.isDisplayed();
-                    }
-                });
-
-        parentPage.setImplicitWait(FragmentSettings.getInstance().getImplicitWait(), TimeUnit.MILLISECONDS);
+        waitUntil(seconds, IS_VISIBLE);
     }
 
     public boolean isElementDisplayed(By by) {
@@ -205,7 +173,9 @@ public class Fragment<Parent extends IFragmentContext> implements WebElement, Wr
         return false;
     }
 
-    public boolean isTextPresent(String text) { return getHtml().contains(text); }
+    public boolean isTextPresent(String text) {
+        return getHtml().contains(text);
+    }
 
     public boolean isTextDisplayed(String text) {
         return isTextPresent(text) && isElementDisplayed(By
@@ -218,20 +188,11 @@ public class Fragment<Parent extends IFragmentContext> implements WebElement, Wr
     }
 
     protected void publishEvent(String description) {
-        FragmentEventBus.getEventBus().post(new FragmentEvent(this, description));
+//        PageEventBus.getEventBus().post(new PageEvent(getName(), description));
     }
 
-    public String toString() {
-        StringBuilder sb = new StringBuilder(getName());
-
-        IFragmentContext context = this.parent;
-
-        while (context instanceof Fragment) {
-            sb.insert(0, context.getName() + '.');
-            context = ((Fragment) context).getParent();
-        }
-
-        return sb.toString();
+    @Override public String toString() {
+        return jsActions.toString(getWrappedElement());
     }
 
 }

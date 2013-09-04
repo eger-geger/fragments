@@ -13,13 +13,10 @@ public class ByNotAvailable extends By {
     private final NoSuchElementException exception;
 
     public ByNotAvailable(Field field) {
-        exception = new NoSuchElementException(
-                String.format("Element [%s] in [%s] is not available.",
-                        field.getName(), field.getDeclaringClass().getName()));
+        exception = new NoSuchElementException(String.format("Element [%s] in [%s] is not available.",
+                field.getName(), field.getDeclaringClass().getName()));
     }
 
-    public List<WebElement> findElements(SearchContext context) { throw exception; }
-
-    public WebElement findElement(SearchContext context) { throw exception; }
+    @Override public List<WebElement> findElements(SearchContext context) { throw exception; }
 
 }

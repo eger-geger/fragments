@@ -7,15 +7,15 @@ import org.openqa.selenium.support.pagefactory.ElementLocatorFactory;
 import java.lang.reflect.Field;
 
 
-public class DynamicLocatorFactory implements ElementLocatorFactory {
+public class FragmentLocatorFactory implements ElementLocatorFactory {
 
     private final SearchContext searchContext;
 
-    public DynamicLocatorFactory(SearchContext searchContext) {
+    public FragmentLocatorFactory(SearchContext searchContext) {
         this.searchContext = searchContext;
     }
 
-    public ElementLocator createLocator(Field field) {
-        return new DynamicElementLocator(searchContext, field);
+    @Override public ElementLocator createLocator(Field field) {
+        return new FragmentLocator(searchContext, field);
     }
 }

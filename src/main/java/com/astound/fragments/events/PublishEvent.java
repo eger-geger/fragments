@@ -1,13 +1,15 @@
-package com.astound.fragments.annotation;
+package com.astound.fragments.events;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target(ElementType.FIELD)
+@Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface FindByExternal {
+public @interface PublishEvent {
+
+    public PageEvent.EventType type() default PageEvent.EventType.ELEMENT_EVENT;
 
     public String value();
 
