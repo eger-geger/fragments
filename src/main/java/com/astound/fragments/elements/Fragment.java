@@ -1,6 +1,7 @@
 package com.astound.fragments.elements;
 
 import com.astound.fragments.PageContext;
+import com.astound.fragments.events.PublishEvent;
 import com.astound.fragments.utils.JSActions;
 import com.google.common.base.Predicate;
 import org.openqa.selenium.*;
@@ -12,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 import static com.astound.fragments.utils.XPathFunctions.containstext;
 
-public class Fragment<Parent extends PageContext> implements WebElement, WrapsElement, PageContext {
+public class Fragment implements WebElement, WrapsElement, PageContext {
 
     private static final Predicate<WebElement> IS_VISIBLE = new Predicate<WebElement>() {
         @Override public boolean apply(WebElement input) { return input.isDisplayed(); }
@@ -82,6 +83,7 @@ public class Fragment<Parent extends PageContext> implements WebElement, WrapsEl
         jsActions.setProperty(getWrappedElement(), property, value);
     }
 
+	@PublishEvent("click on")
     @Override public void click() {
         publishEvent("click");
         wrappedElement.click();

@@ -4,7 +4,6 @@ import com.astound.fragments.elements.Fragment;
 import com.astound.fragments.locators.FragmentLocatorFactory;
 import com.astound.fragments.proxy.ElementLoader;
 import com.astound.fragments.proxy.EventPublisher;
-import com.astound.fragments.proxy.JsExecutorLoader;
 import com.astound.fragments.proxy.ListLoader;
 import net.sf.cglib.proxy.Enhancer;
 import org.openqa.selenium.JavascriptExecutor;
@@ -27,13 +26,9 @@ public class FragmentFactory {
 
     private final JavascriptExecutor jsExecutor;
 
-    public FragmentFactory(JsExecutorProvider jsExecutorProvider) {
+    public FragmentFactory(JavascriptExecutor jsExecutor) {
         classLoader = getClass().getClassLoader();
-        this.jsExecutor = createJsExecutorProxy(jsExecutorProvider);
-    }
-
-    private JavascriptExecutor createJsExecutorProxy(JsExecutorProvider jsExecutorProvider) {
-        return (JavascriptExecutor) newProxyInstance(classLoader, new Class[]{JavascriptExecutor.class}, new JsExecutorLoader(jsExecutorProvider));
+        this.jsExecutor = jsExecutor;
     }
 
     public <F extends Fragment> F createFragment(Class<F> aClass, ElementLocator locator, String name) {
@@ -41,7 +36,8 @@ public class FragmentFactory {
 
         initFragmentsIn(fragment);
 
-        return wrapWithEventPublishingProxy(fragment);
+	    return fragment;
+//        return wrapWithEventPublishingProxy(fragment);
     }
 
     public <F extends Fragment> List<F> createList(Class<F> aClass, ElementLocator locator, String name) {
@@ -59,7 +55,7 @@ public class FragmentFactory {
     public <Context extends PageContext> void initFragmentsIn(Context context, FragmentDecorator decorator) {
         Class aClass = context.getClass();
 
-        while (PageContext.class.isAssignableFrom(aClass)) {
+        while (isAssignableContext(aClass)) {
             for (Field field : aClass.getDeclaredFields()) {
                 assignContextField(context, field, decorator.decorate(classLoader, field));
             }
@@ -67,24 +63,40 @@ public class FragmentFactory {
         }
     }
 
-    private void assignContextField(Object context, Field field, Object value) {
-        try {
-            field.setAccessible(true);
-            field.set(context, value);
-        } catch (ReflectiveOperationException ex) {
+	private static boolean isAssignableContext(Class aClass){
+		return PageContext.class.isAssignableFrom(aClass) && !aClass.equals(Fragment.class);
+	}
 
+    private void assignContextField(Object context, Field field, Object value) {
+        if(value != null){
+	        try {
+		        field.setAccessible(true);
+		        field.set(context, value);
+	        } catch (ReflectiveOperationException ex) {
+
+	        }
         }
     }
 
-    public static <C extends PageContext> C wrapWithEventPublishingProxy(C context) {
-        return (C) Enhancer.create(context.getClass(), new EventPublisher(context));
-    }
+//    private <F extends Fragment> F wrapWithEventPublishingProxy(F fragment) {
+//	    Enhancer enhancer = new Enhancer();
+//	    enhancer.setSuperclass(fragment.getClass());
+//	    enhancer.setCallback(new EventPublisher(fragment));
+//
+//	    return (F) enhancer.create(new Class[]{PageContext.class}, new Object[]{fragment});
+//    }
 
     private static <T extends Fragment> T createFragment(Class<T> aClass, PageContext pageContext) {
-        try {
-            return aClass.getConstructor(PageContext.class).newInstance(pageContext);
-        } catch (Exception ex) {
-            throw new IllegalArgumentException(String.format("Failed to create [%s]", aClass), ex);
-        }
+	    Enhancer enhancer = new Enhancer();
+	    enhancer.setSuperclass(aClass);
+	    enhancer.setCallback(new EventPublisher());
+
+	    return (T) enhancer.create(new Class[]{PageContext.class}, new Object[]{pageContext});
+//
+//	    try {
+//            return aClass.getConstructor(PageContext.class).newInstance(pageContext);
+//        } catch (Exception ex) {
+//            throw new IllegalArgumentException(String.format("Failed to create [%s]", aClass), ex);
+//        }
     }
 }

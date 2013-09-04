@@ -55,9 +55,13 @@ public class FromFindBys implements ByExtractor {
         @Override public List<WebElement> findElements(SearchContext searchContext) {
             List<WebElement> elementList = new ArrayList<>();
 
-            for (WebElement webElement : wrappedBy.findElements(searchContext)) {
-                elementList.addAll(webElement.findElements(nextInChain));
-            }
+	        if(nextInChain == null){
+		        elementList.addAll(wrappedBy.findElements(searchContext));
+	        } else {
+		        for (WebElement webElement : wrappedBy.findElements(searchContext)) {
+			        elementList.addAll(webElement.findElements(nextInChain));
+		        }
+	        }
 
             return elementList;
         }
@@ -69,5 +73,9 @@ public class FromFindBys implements ByExtractor {
                 nextInChain.addToChain(by);
             }
         }
+
+	    public String toString() {
+		    return wrappedBy.toString();
+	    }
     }
 }

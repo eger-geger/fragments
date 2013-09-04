@@ -15,26 +15,20 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 public class EventPublisher implements MethodInterceptor {
 
-    private final PageContext pageContext;
-
-    public EventPublisher(PageContext pageContext) {
-        this.pageContext = pageContext;
-    }
-
-    @Override public Object intercept(Object o, Method method, Object[] arguments, MethodProxy methodProxy) throws Throwable {
+    @Override public Object intercept(Object object, Method method, Object[] arguments, MethodProxy methodProxy) throws Throwable {
         PublishEvent publishEvent = method.getAnnotation(PublishEvent.class);
 
         if (publishEvent != null) {
-            getEventBus().post(newEvent(publishEvent, method, arguments));
+            getEventBus().post(newEvent(publishEvent, (PageContext)object, method, arguments));
         }
 
-        return methodProxy.invokeSuper(pageContext, arguments);
+        return methodProxy.invokeSuper(object, arguments);
     }
 
-    private PageEvent newEvent(PublishEvent publishEvent, Method method, Object[] arguments) {
+    private PageEvent newEvent(PublishEvent publishEvent, PageContext context, Method method, Object[] arguments) {
         String eventDescription = isEmpty(publishEvent.value()) ? method.getName() : format(publishEvent.value(), arguments);
 
-        return new PageEvent(pageContext.getName(), eventDescription, publishEvent.type());
+        return new PageEvent(context.getName(), eventDescription, publishEvent.type());
     }
 
     private static EventBus getEventBus() {
