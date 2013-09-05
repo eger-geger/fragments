@@ -21,22 +21,18 @@ public class Select extends Fragment {
     }
 
     public void deselectAll() {
-        publishEvent("deselecting all options");
         delegate().deselectAll();
     }
 
     public void deselectByIndex(int index) {
-        publishEvent(String.format("deseclting [%s] option", index));
         delegate().selectByIndex(index);
     }
 
     public void deselectByValue(String value) {
-        publishEvent(String.format("deselecting option with value [%s]", value));
         delegate().deselectByValue(value);
     }
 
     public void deselectByVisibleText(String text) {
-        publishEvent(String.format("deselecting option with text [%s]", text));
         delegate().deselectByVisibleText(text);
     }
 
@@ -97,22 +93,18 @@ public class Select extends Fragment {
     }
 
     public void selectByIndex(int index) {
-        publishEvent(String.format("selecting option with index [%s]", index));
         delegate().selectByIndex(index);
     }
 
     public void selectByValue(String value) {
-        publishEvent(String.format("selecting option with value [%s]", value));
         delegate().selectByValue(value);
     }
 
     public void selectByVisibleText(String text) {
-        publishEvent(String.format("selecting option with text [%s]", text));
         delegate().selectByVisibleText(text);
     }
 
     public void selectByPartialText(String text) {
-        publishEvent(String.format("selecting option with text[%s]", text));
         findFragment(By.xpath(String.format("./option[contains(text(), '%s')]", text))).jsClick();
     }
 }

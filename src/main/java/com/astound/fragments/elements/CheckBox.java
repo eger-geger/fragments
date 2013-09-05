@@ -29,7 +29,6 @@ public class CheckBox extends Fragment {
     }
 
     public void setState(boolean state) {
-        publishEvent(state ? "checking" : "unchecking");
         waitUntil(5, state ? IS_CHECKED : IS_NOT_CHECKED);
     }
 

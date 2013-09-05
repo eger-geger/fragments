@@ -7,10 +7,10 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface PublishEvent {
+public @interface Publish {
 
-    public PageEvent.EventType type() default PageEvent.EventType.ELEMENT_EVENT;
+    public PageEventType type() default PageEventType.PAGE_EVENT;
 
-    public String value();
+    public String format() default "executed {method}:{return}";
 
 }

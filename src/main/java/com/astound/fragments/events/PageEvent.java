@@ -2,18 +2,16 @@ package com.astound.fragments.events;
 
 public class PageEvent {
 
-    public static enum EventType {ELEMENT_EVENT, PAGE_EVENT, USER_EVENT}
-
     private final String contextName;
 
     private final String eventDescription;
 
-    private final EventType eventType;
+    private final PageEventType pageEventType;
 
-    public PageEvent(String contextName, String eventDescription, EventType eventType) {
+    public PageEvent(String contextName, String eventDescription, PageEventType pageEventType) {
         this.contextName = contextName;
         this.eventDescription = eventDescription;
-        this.eventType = eventType;
+        this.pageEventType = pageEventType;
     }
 
     public String getContextName() {
@@ -24,11 +22,11 @@ public class PageEvent {
         return eventDescription;
     }
 
-    public EventType getEventType() {
-        return eventType;
+    public PageEventType getPageEventType() {
+        return pageEventType;
     }
 
     @Override public String toString() {
-        return String.format("%s : %s : %s", eventType, contextName, eventDescription);
+        return String.format("%s : %s : %s", pageEventType, contextName, eventDescription);
     }
 }

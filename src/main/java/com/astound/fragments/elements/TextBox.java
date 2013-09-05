@@ -7,7 +7,6 @@ import org.openqa.selenium.Keys;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.util.Arrays;
 
 public class TextBox extends Fragment {
 
@@ -32,14 +31,11 @@ public class TextBox extends Fragment {
     }
 
     public void setText(String... text) {
-        publishEvent(String.format("entering text %s", Arrays.toString(text)));
         super.clear();
         super.sendKeys(text);
     }
 
     public void setTextUsingClipboard(String text) {
-        publishEvent(String.format("copying text [%s] from clipdoard", text));
-
         StringSelection stringSelection = new StringSelection(text);
         Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();
         clip.setContents(stringSelection, stringSelection);

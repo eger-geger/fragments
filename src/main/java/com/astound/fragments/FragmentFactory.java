@@ -2,9 +2,9 @@ package com.astound.fragments;
 
 import com.astound.fragments.elements.Fragment;
 import com.astound.fragments.locators.FragmentLocatorFactory;
-import com.astound.fragments.proxy.ElementLoader;
+import com.astound.fragments.proxy.ElementLazyLoader;
 import com.astound.fragments.proxy.EventPublisher;
-import com.astound.fragments.proxy.ListLoader;
+import com.astound.fragments.proxy.ListLazyLoader;
 import net.sf.cglib.proxy.Enhancer;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
@@ -36,16 +36,16 @@ public class FragmentFactory {
 
         initFragmentsIn(fragment);
 
-	    return fragment;
+        return fragment;
 //        return wrapWithEventPublishingProxy(fragment);
     }
 
     public <F extends Fragment> List<F> createList(Class<F> aClass, ElementLocator locator, String name) {
-        return (List<F>) newProxyInstance(classLoader, FRAGMENT_LIST_INTERFACES, new ListLoader<>(aClass, locator, this, name));
+        return (List<F>) newProxyInstance(classLoader, FRAGMENT_LIST_INTERFACES, new ListLazyLoader<>(aClass, locator, this, name));
     }
 
     private WebElement createWebElementProxy(ElementLocator locator) {
-        return (WebElement) newProxyInstance(classLoader, FRAGMENT_INTERFACES, new ElementLoader(locator));
+        return (WebElement) newProxyInstance(classLoader, FRAGMENT_INTERFACES, new ElementLazyLoader(locator));
     }
 
     public <Context extends PageContext> void initFragmentsIn(Context context) {
@@ -63,18 +63,18 @@ public class FragmentFactory {
         }
     }
 
-	private static boolean isAssignableContext(Class aClass){
-		return PageContext.class.isAssignableFrom(aClass) && !aClass.equals(Fragment.class);
-	}
+    private static boolean isAssignableContext(Class aClass) {
+        return PageContext.class.isAssignableFrom(aClass) && !aClass.equals(Fragment.class);
+    }
 
     private void assignContextField(Object context, Field field, Object value) {
-        if(value != null){
-	        try {
-		        field.setAccessible(true);
-		        field.set(context, value);
-	        } catch (ReflectiveOperationException ex) {
+        if (value != null) {
+            try {
+                field.setAccessible(true);
+                field.set(context, value);
+            } catch (ReflectiveOperationException ex) {
 
-	        }
+            }
         }
     }
 
@@ -87,11 +87,11 @@ public class FragmentFactory {
 //    }
 
     private static <T extends Fragment> T createFragment(Class<T> aClass, PageContext pageContext) {
-	    Enhancer enhancer = new Enhancer();
-	    enhancer.setSuperclass(aClass);
-	    enhancer.setCallback(new EventPublisher());
+        Enhancer enhancer = new Enhancer();
+        enhancer.setSuperclass(aClass);
+        enhancer.setCallback(new EventPublisher());
 
-	    return (T) enhancer.create(new Class[]{PageContext.class}, new Object[]{pageContext});
+        return (T) enhancer.create(new Class[]{PageContext.class}, new Object[]{pageContext});
 //
 //	    try {
 //            return aClass.getConstructor(PageContext.class).newInstance(pageContext);

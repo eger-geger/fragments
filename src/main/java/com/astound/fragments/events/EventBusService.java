@@ -23,7 +23,7 @@ public class EventBusService implements EventBusProvider {
                 Iterator<EventBusProvider> providerIterator = providers.iterator();
 
                 while (providerIterator.hasNext()) {
-                    method.invoke(providerIterator.next(), objects);
+                    method.invoke(providerIterator.next().get(), objects);
                 }
 
                 return null;

@@ -2,6 +2,7 @@ package com.astound.fragments.proxy;
 
 import com.astound.fragments.FragmentFactory;
 import com.astound.fragments.elements.Fragment;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.pagefactory.ElementLocator;
 
@@ -14,7 +15,7 @@ import java.util.List;
 
 import static com.astound.fragments.utils.StackTraceCleaner.cleanStackTrace;
 
-public class ListLoader<F extends Fragment> implements InvocationHandler {
+public class ListLazyLoader<F extends Fragment> implements InvocationHandler {
 
     private final FragmentFactory fragmentFactory;
 
@@ -26,7 +27,7 @@ public class ListLoader<F extends Fragment> implements InvocationHandler {
 
     private List<Fragment> cachedList;
 
-    public ListLoader(Class<F> aClass, ElementLocator locator, FragmentFactory fragmentFactory, String name) {
+    public ListLazyLoader(Class<F> aClass, ElementLocator locator, FragmentFactory fragmentFactory, String name) {
         this.fragmentFactory = fragmentFactory;
         this.locator = locator;
         this.aClass = aClass;
@@ -51,17 +52,39 @@ public class ListLoader<F extends Fragment> implements InvocationHandler {
         List<Fragment> cachedList = new ArrayList<>();
 
         for (int i = 0; i < elementList.size(); i++) {
-            cachedList.add(fragmentFactory.createFragment(aClass, itemLocator(i), itemName(i)));
+            cachedList.add(fragmentFactory.createFragment(aClass, new ListItemLocator(i), itemName(i)));
         }
 
         return cachedList;
     }
 
-    private ElementLocator itemLocator(int index) {
-        return new ListItemLocator(index, locator);
-    }
-
     private String itemName(int index) {
         return String.format("%s-element-%s", name, index);
+    }
+
+    private class ListItemLocator implements ElementLocator {
+
+        private final int index;
+
+        ListItemLocator(int index) {
+            this.index = index;
+        }
+
+        @Override public WebElement findElement() {
+            try {
+                return locator.findElements().get(index);
+            } catch (IndexOutOfBoundsException ex) {
+                throw new NoSuchElementException(String.format("List item [%s] not found!", index));
+            }
+        }
+
+        @Override public List<WebElement> findElements() {
+            throw new UnsupportedOperationException("Should not be used for ListItemLocator");
+        }
+
+        @Override public String toString() {
+            return locator.toString();
+        }
+
     }
 }
