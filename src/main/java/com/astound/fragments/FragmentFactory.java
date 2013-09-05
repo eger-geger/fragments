@@ -1,11 +1,10 @@
 package com.astound.fragments;
 
 import com.astound.fragments.elements.Fragment;
+import com.astound.fragments.events.PublisherFactory;
 import com.astound.fragments.locators.FragmentLocatorFactory;
 import com.astound.fragments.proxy.ElementLazyLoader;
-import com.astound.fragments.proxy.EventPublisher;
 import com.astound.fragments.proxy.ListLazyLoader;
-import net.sf.cglib.proxy.Enhancer;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.internal.WrapsElement;
@@ -18,85 +17,72 @@ import static java.lang.reflect.Proxy.newProxyInstance;
 
 public class FragmentFactory {
 
-    private static final Class[] FRAGMENT_LIST_INTERFACES = new Class[]{List.class};
+	private static final Class[] FRAGMENT_LIST_INTERFACES = new Class[] {List.class};
 
-    private static final Class[] FRAGMENT_INTERFACES = new Class[]{WebElement.class, WrapsElement.class};
+	private static final Class[] FRAGMENT_INTERFACES = new Class[] {WebElement.class, WrapsElement.class};
 
-    private final ClassLoader classLoader;
+	private final ClassLoader classLoader;
 
-    private final JavascriptExecutor jsExecutor;
+	private final JavascriptExecutor jsExecutor;
 
-    public FragmentFactory(JavascriptExecutor jsExecutor) {
-        classLoader = getClass().getClassLoader();
-        this.jsExecutor = jsExecutor;
-    }
+	private final PublisherFactory publisherFactory = new PublisherFactory();
 
-    public <F extends Fragment> F createFragment(Class<F> aClass, ElementLocator locator, String name) {
-        F fragment = createFragment(aClass, new PageContextSupport(createWebElementProxy(locator), jsExecutor, this, name));
+	public FragmentFactory(JavascriptExecutor jsExecutor) {
+		classLoader = getClass().getClassLoader();
+		this.jsExecutor = jsExecutor;
+	}
 
-        initFragmentsIn(fragment);
+	public <F extends Fragment> F createFragment(Class<F> aClass, ElementLocator locator, String name) {
+		F fragment = newFragment(aClass, createNamedArea(createWebElementProxy(locator), name));
 
-        return fragment;
-//        return wrapWithEventPublishingProxy(fragment);
-    }
+		initFragmentsIn(fragment);
 
-    public <F extends Fragment> List<F> createList(Class<F> aClass, ElementLocator locator, String name) {
-        return (List<F>) newProxyInstance(classLoader, FRAGMENT_LIST_INTERFACES, new ListLazyLoader<>(aClass, locator, this, name));
-    }
+		return fragment;
+	}
 
-    private WebElement createWebElementProxy(ElementLocator locator) {
-        return (WebElement) newProxyInstance(classLoader, FRAGMENT_INTERFACES, new ElementLazyLoader(locator));
-    }
+	private FragmentContext createNamedArea(WebElement webElement, String name) {
+		return new FragmentContextSupport(webElement, jsExecutor, this, name);
+	}
 
-    public <Context extends PageContext> void initFragmentsIn(Context context) {
-        initFragmentsIn(context, new FragmentDecorator(new FragmentLocatorFactory(context), this));
-    }
+	private <T extends Fragment> T newFragment(Class<T> aClass, FragmentContext fragmentContext) {
+		return publisherFactory.createPublishingInstance(aClass, new Class[] {FragmentContext.class}, fragmentContext);
+	}
 
-    public <Context extends PageContext> void initFragmentsIn(Context context, FragmentDecorator decorator) {
-        Class aClass = context.getClass();
+	public <F extends Fragment> List<F> createList(Class<F> aClass, ElementLocator locator, String name) {
+		return (List<F>) newProxyInstance(classLoader, FRAGMENT_LIST_INTERFACES, new ListLazyLoader<>(aClass, locator, this, name));
+	}
 
-        while (isAssignableContext(aClass)) {
-            for (Field field : aClass.getDeclaredFields()) {
-                assignContextField(context, field, decorator.decorate(classLoader, field));
-            }
-            aClass = aClass.getSuperclass();
-        }
-    }
+	private WebElement createWebElementProxy(ElementLocator locator) {
+		return (WebElement) newProxyInstance(classLoader, FRAGMENT_INTERFACES, new ElementLazyLoader(locator));
+	}
 
-    private static boolean isAssignableContext(Class aClass) {
-        return PageContext.class.isAssignableFrom(aClass) && !aClass.equals(Fragment.class);
-    }
+	public <Context extends FragmentContext> void initFragmentsIn(Context context) {
+		initFragmentsIn(context, new FragmentDecorator(new FragmentLocatorFactory(context), this));
+	}
 
-    private void assignContextField(Object context, Field field, Object value) {
-        if (value != null) {
-            try {
-                field.setAccessible(true);
-                field.set(context, value);
-            } catch (ReflectiveOperationException ex) {
+	public <Context extends FragmentContext> void initFragmentsIn(Context context, FragmentDecorator decorator) {
+		Class aClass = context.getClass();
 
-            }
-        }
-    }
+		while (isAssignableContext(aClass)) {
+			for (Field field : aClass.getDeclaredFields()) {
+				assignContextField(context, field, decorator.decorate(classLoader, field));
+			}
+			aClass = aClass.getSuperclass();
+		}
+	}
 
-//    private <F extends Fragment> F wrapWithEventPublishingProxy(F fragment) {
-//	    Enhancer enhancer = new Enhancer();
-//	    enhancer.setSuperclass(fragment.getClass());
-//	    enhancer.setCallback(new EventPublisher(fragment));
-//
-//	    return (F) enhancer.create(new Class[]{PageContext.class}, new Object[]{fragment});
-//    }
+	private static boolean isAssignableContext(Class aClass) {
+		return FragmentContext.class.isAssignableFrom(aClass) && !aClass.equals(Fragment.class);
+	}
 
-    private static <T extends Fragment> T createFragment(Class<T> aClass, PageContext pageContext) {
-        Enhancer enhancer = new Enhancer();
-        enhancer.setSuperclass(aClass);
-        enhancer.setCallback(new EventPublisher());
+	private void assignContextField(Object context, Field field, Object value) {
+		if (value != null) {
+			try {
+				field.setAccessible(true);
+				field.set(context, value);
+			} catch (ReflectiveOperationException ex) {
 
-        return (T) enhancer.create(new Class[]{PageContext.class}, new Object[]{pageContext});
-//
-//	    try {
-//            return aClass.getConstructor(PageContext.class).newInstance(pageContext);
-//        } catch (Exception ex) {
-//            throw new IllegalArgumentException(String.format("Failed to create [%s]", aClass), ex);
-//        }
-    }
+			}
+		}
+	}
 }

@@ -9,8 +9,14 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Publish {
 
-    public PageEventType type() default PageEventType.PAGE_EVENT;
+	public EventType type() default EventType.PAGE_EVENT;
 
-    public String format() default "executed {method}:{return}";
+	/**
+	 * Formatting options:
+	 * for return value: {r|ret|return}
+	 * for arguments: {1}, {2}...
+	 * for method name: {m|method}
+	 */
+	public String format() default "executed {method}:{return}";
 
 }

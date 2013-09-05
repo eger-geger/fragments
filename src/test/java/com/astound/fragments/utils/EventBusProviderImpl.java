@@ -5,13 +5,14 @@ import com.google.common.eventbus.EventBus;
 
 public class EventBusProviderImpl implements EventBusProvider {
 
-    private final EventBus eventBus;
+	private final EventBus eventBus;
 
-    public EventBusProviderImpl() {
-        this.eventBus = new EventBus();
-    }
+	public EventBusProviderImpl() {
+		this.eventBus = new EventBus();
+		eventBus.register(new PageEventLogger());
+	}
 
-    @Override public EventBus get() {
-        return eventBus;
-    }
+	@Override public EventBus get() {
+		return eventBus;
+	}
 }

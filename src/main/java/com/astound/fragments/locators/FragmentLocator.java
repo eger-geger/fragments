@@ -11,26 +11,39 @@ import java.util.List;
 
 public class FragmentLocator implements ElementLocator {
 
-    private final SearchContext searchContext;
+	private final SearchContext searchContext;
 
-    private final By by;
+	private final By by;
 
-    public FragmentLocator(SearchContext searchContext, By by) {
-        this.searchContext = searchContext;
-        this.by = by;
-    }
+	public FragmentLocator(SearchContext searchContext, By by) {
+		this.searchContext = searchContext;
+		this.by = by;
+	}
 
-    public FragmentLocator(SearchContext searchContext, Field field) {
-        this(searchContext, buildByFromField(field));
-    }
+	public FragmentLocator(SearchContext searchContext, Field field) {
+		this(searchContext, buildByFromField(field));
+	}
 
-    @Override public WebElement findElement() { return searchContext.findElement(by); }
+	@Override public WebElement findElement() { return searchContext.findElement(by); }
 
-    @Override public List<WebElement> findElements() { return searchContext.findElements(by); }
+	@Override public List<WebElement> findElements() { return searchContext.findElements(by); }
 
-    @Override public String toString() { return by.toString(); }
+	@Override public String toString() { return by.toString(); }
 
-    private static By buildByFromField(Field field) {
-        return ByExtractorService.getInstance().extract(field).or(new ByNotAvailable(field));
-    }
+	private static By buildByFromField(Field field) {
+		return ByExtractorService.getInstance().extract(field).or(new NotResolved(field));
+	}
+
+	private static class NotResolved extends By {
+
+		private final RuntimeException runtimeException;
+
+		private NotResolved(Field field) {
+			runtimeException = new IllegalArgumentException(String.format("Cannot resolve locator for [%s]", field));
+		}
+
+		@Override public List<WebElement> findElements(SearchContext context) {
+			throw runtimeException;
+		}
+	}
 }

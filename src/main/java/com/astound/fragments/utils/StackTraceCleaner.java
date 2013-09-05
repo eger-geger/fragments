@@ -6,30 +6,27 @@ import java.util.List;
 
 public class StackTraceCleaner {
 
-    private final static String[] TRASH_PACKAGES = new String[]{
-            "sun.reflect", "java.lang", "java.util",
-            "org.openqa.selenium", "com.astound.fragments",
-    };
+	private final static String[] TRASH_PACKAGES = new String[] {
+			"sun.reflect", "java.lang", "java.util",
+			"org.openqa.selenium", "com.astound.fragments",
+	};
 
-    /**
-     * Empty
-     */
-    private StackTraceCleaner() {}
+	private StackTraceCleaner() {}
 
-    public static Throwable cleanStackTrace(Throwable throwable) {
-        List<StackTraceElement> effectiveStackTrace =
-                new ArrayList<>(Arrays.asList(throwable.getStackTrace()));
+	public static Throwable cleanStackTrace(Throwable throwable) {
+		List<StackTraceElement> effectiveStackTrace =
+				new ArrayList<>(Arrays.asList(throwable.getStackTrace()));
 
-        for (StackTraceElement element : throwable.getStackTrace()) {
-            for (int i = 0; i < TRASH_PACKAGES.length && effectiveStackTrace.contains(element); i++) {
-                if (element.getClassName().startsWith(TRASH_PACKAGES[i])) {
-                    effectiveStackTrace.remove(element);
-                }
-            }
-        }
+		for (StackTraceElement element : throwable.getStackTrace()) {
+			for (int i = 0; i < TRASH_PACKAGES.length && effectiveStackTrace.contains(element); i++) {
+				if (element.getClassName().startsWith(TRASH_PACKAGES[i])) {
+					effectiveStackTrace.remove(element);
+				}
+			}
+		}
 
-        throwable.setStackTrace(effectiveStackTrace.toArray(new StackTraceElement[0]));
+		throwable.setStackTrace(effectiveStackTrace.toArray(new StackTraceElement[0]));
 
-        return throwable;
-    }
+		return throwable;
+	}
 }

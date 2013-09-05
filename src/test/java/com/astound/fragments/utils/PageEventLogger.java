@@ -1,12 +1,12 @@
 package com.astound.fragments.utils;
 
-import com.astound.fragments.events.PageEvent;
+import com.astound.fragments.events.Event;
 import com.google.common.eventbus.Subscribe;
 
 public class PageEventLogger {
 
-    @Subscribe public void handle(PageEvent pageEvent) {
-        System.out.println(pageEvent.toString());
-    }
+	@Subscribe public void handle(Event event) {
+		System.out.println(event.toString());
+	}
 
 }
