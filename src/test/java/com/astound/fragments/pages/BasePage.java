@@ -1,7 +1,6 @@
 package com.astound.fragments.pages;
 
 import com.astound.fragments.FragmentContext;
-import com.astound.fragments.FragmentContextSupport;
 import com.astound.fragments.FragmentFactory;
 import com.astound.fragments.elements.Fragment;
 import org.openqa.selenium.By;
@@ -16,12 +15,8 @@ public class BasePage implements FragmentContext {
 	private final FragmentContext context;
 
 	public BasePage(WebDriver webDriver) {
-		JavascriptExecutor jsExecutor = (JavascriptExecutor) webDriver;
-
-		FragmentFactory fragmentFactory = new FragmentFactory(jsExecutor);
-
-		context = new FragmentContextSupport(webDriver, jsExecutor, fragmentFactory, getClass().getSimpleName());
-
+		FragmentFactory fragmentFactory = new FragmentFactory((JavascriptExecutor) webDriver);
+		context = fragmentFactory.createNamedArea(webDriver, getClass().getSuperclass().getName());
 		fragmentFactory.initFragmentsIn(this);
 	}
 

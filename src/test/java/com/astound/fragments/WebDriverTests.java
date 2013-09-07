@@ -1,5 +1,6 @@
 package com.astound.fragments;
 
+import com.astound.fragments.events.PublisherFactory;
 import com.astound.fragments.pages.BasePage;
 import org.openqa.selenium.WebDriver;
 import org.testng.annotations.AfterClass;
@@ -12,6 +13,8 @@ public abstract class WebDriverTests {
 	private static final String BASE_WIKI_URL = "http://ru.wikipedia.org";
 
 	private WebDriver webDriver;
+
+	private final PublisherFactory publisherFactory = new PublisherFactory();
 
 	@BeforeClass public void openBrowser() {
 		webDriver = initWebDriver();
@@ -33,8 +36,8 @@ public abstract class WebDriverTests {
 		webDriver.navigate().to(url);
 	}
 
-	protected <P extends BasePage> P createPage(Class<P> pClass) throws Exception {
-		return pClass.getConstructor(WebDriver.class).newInstance(webDriver);
+	protected <P extends BasePage> P createPage(Class<P> pClass) {
+		return publisherFactory.createPublishingInstance(pClass, new Class[] {WebDriver.class}, webDriver);
 	}
 
 }

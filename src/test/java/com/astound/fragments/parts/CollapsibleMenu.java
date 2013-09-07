@@ -14,7 +14,7 @@ public class CollapsibleMenu extends Fragment {
 		super(fragmentContext);
 	}
 
-	@FindBy(tagName = "h3")
+	@FindBy(tagName = "a")
 	private Fragment headerToggle;
 
 	@FindBy(css = ".body li a")
@@ -40,7 +40,7 @@ public class CollapsibleMenu extends Fragment {
 
 	public void hide() {
 		if (isOpened()) {
-			headerToggle.jsClick();
+			headerToggle.click();
 
 			waitUntil(5, new Predicate<WebElement>() {
 				@Override public boolean apply(WebElement input) { return isClosed(); }

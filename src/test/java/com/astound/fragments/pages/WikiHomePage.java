@@ -10,21 +10,21 @@ import java.util.List;
 
 public class WikiHomePage extends WikiPage {
 
-    public WikiHomePage(WebDriver webDriver) {
-        super(webDriver);
-    }
+	public WikiHomePage(WebDriver webDriver) {
+		super(webDriver);
+	}
 
-    @FindBys({@FindBy(id = "p-navigation"), @FindBy(tagName = "a")})
-    private List<Fragment> navigationLinks;
+	@FindBys({@FindBy(id = "p-navigation"), @FindBy(tagName = "a")})
+	private List<Fragment> navigationLinks;
 
-    @FindBy(id = "p-participation")
-    public CollapsibleMenu participationMenu;
+	@FindBy(id = "p-participation")
+	public CollapsibleMenu participationMenu;
 
-    public void openNavigationLink(int index) {
-        navigationLinks.get(index).click();
-    }
+	public void openNavigationLink(int index) {
+		navigationLinks.get(index).click();
+	}
 
-    public boolean isValidPage() {
-        return navigationLinks.size() > 0;
-    }
+	@Override public boolean isValidPage() {
+		return navigationLinks.size() > 0;
+	}
 }

@@ -6,6 +6,7 @@ import com.astound.fragments.locators.FragmentLocatorFactory;
 import com.astound.fragments.proxy.ElementLazyLoader;
 import com.astound.fragments.proxy.ListLazyLoader;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.SearchContext;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.internal.WrapsElement;
 import org.openqa.selenium.support.pagefactory.ElementLocator;
@@ -13,6 +14,7 @@ import org.openqa.selenium.support.pagefactory.ElementLocator;
 import java.lang.reflect.Field;
 import java.util.List;
 
+import static com.astound.fragments.utils.ReflectionUtils.assignField;
 import static java.lang.reflect.Proxy.newProxyInstance;
 
 public class FragmentFactory {
@@ -25,11 +27,13 @@ public class FragmentFactory {
 
 	private final JavascriptExecutor jsExecutor;
 
-	private final PublisherFactory publisherFactory = new PublisherFactory();
+	private final PublisherFactory publisherFactory;
 
 	public FragmentFactory(JavascriptExecutor jsExecutor) {
 		classLoader = getClass().getClassLoader();
+		publisherFactory = new PublisherFactory();
 		this.jsExecutor = jsExecutor;
+
 	}
 
 	public <F extends Fragment> F createFragment(Class<F> aClass, ElementLocator locator, String name) {
@@ -40,8 +44,8 @@ public class FragmentFactory {
 		return fragment;
 	}
 
-	private FragmentContext createNamedArea(WebElement webElement, String name) {
-		return new FragmentContextSupport(webElement, jsExecutor, this, name);
+	public FragmentContext createNamedArea(SearchContext searchContext, String name) {
+		return new FragmentContextSupport(searchContext, jsExecutor, this, name);
 	}
 
 	private <T extends Fragment> T newFragment(Class<T> aClass, FragmentContext fragmentContext) {
@@ -65,7 +69,7 @@ public class FragmentFactory {
 
 		while (isAssignableContext(aClass)) {
 			for (Field field : aClass.getDeclaredFields()) {
-				assignContextField(context, field, decorator.decorate(classLoader, field));
+				assignField(context, field, decorator.decorate(classLoader, field));
 			}
 			aClass = aClass.getSuperclass();
 		}
@@ -75,14 +79,4 @@ public class FragmentFactory {
 		return FragmentContext.class.isAssignableFrom(aClass) && !aClass.equals(Fragment.class);
 	}
 
-	private void assignContextField(Object context, Field field, Object value) {
-		if (value != null) {
-			try {
-				field.setAccessible(true);
-				field.set(context, value);
-			} catch (ReflectiveOperationException ex) {
-
-			}
-		}
-	}
 }

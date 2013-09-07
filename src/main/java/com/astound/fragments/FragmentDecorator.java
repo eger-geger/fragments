@@ -1,79 +1,69 @@
 package com.astound.fragments;
 
 import com.astound.fragments.elements.Fragment;
+import com.astound.fragments.names.DefaultFieldNameResolver;
+import com.astound.fragments.names.FieldNameResolver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.pagefactory.ElementLocator;
 import org.openqa.selenium.support.pagefactory.ElementLocatorFactory;
 import org.openqa.selenium.support.pagefactory.FieldDecorator;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.List;
+
+import static com.astound.fragments.utils.ReflectionUtils.getFieldGenericType;
 
 public class FragmentDecorator implements FieldDecorator {
 
-    private final ElementLocatorFactory locatorFactory;
+	private final ElementLocatorFactory locatorFactory;
 
-    private final FragmentFactory elementFactory;
+	private final FragmentFactory elementFactory;
 
-    public FragmentDecorator(ElementLocatorFactory locatorFactory, FragmentFactory elementFactory) {
-        this.locatorFactory = locatorFactory;
-        this.elementFactory = elementFactory;
-    }
+	private final FieldNameResolver fieldNameResolver;
 
-    @Override public Object decorate(ClassLoader classLoader, Field field) {
-        Class fieldType = field.getType();
-        String fieldName = field.getName();
+	public FragmentDecorator(ElementLocatorFactory locatorFactory, FragmentFactory elementFactory, FieldNameResolver fieldNameResolver) {
+		this.locatorFactory = locatorFactory;
+		this.elementFactory = elementFactory;
+		this.fieldNameResolver = fieldNameResolver;
+	}
 
-        ElementLocator locator = locatorFactory.createLocator(field);
+	public FragmentDecorator(ElementLocatorFactory locatorFactory, FragmentFactory elementFactory) {
+		this(locatorFactory, elementFactory, new DefaultFieldNameResolver());
+	}
 
-        if (isFragmentCompatible(fieldType)) {
-            return elementFactory.createFragment(fragmentTypeOf(fieldType), locator, fieldName);
-        }
+	@Override public Object decorate(ClassLoader classLoader, Field field) {
+		Class fieldType = field.getType();
+		String fieldName = fieldNameResolver.resolveName(field);
 
-        if (List.class.isAssignableFrom(fieldType)) {
-            Class listGenericType = fieldGenericType(field);
+		ElementLocator locator = locatorFactory.createLocator(field);
 
-            if (isFragmentCompatible(listGenericType)) {
-                return elementFactory.createList(fragmentTypeOf(listGenericType), locator, fieldName);
-            }
-        }
+		if (isFragmentCompatible(fieldType)) {
+			return elementFactory.createFragment(fragmentTypeOf(fieldType), locator, fieldName);
+		}
 
-        return null;
-    }
+		if (List.class.isAssignableFrom(fieldType)) {
+			Class listGenericType = getFieldGenericType(field);
 
-    private static boolean isFragmentCompatible(Class aClass) {
-        return Fragment.class.isAssignableFrom(aClass) || WebElement.class.isAssignableFrom(aClass);
-    }
+			if (isFragmentCompatible(listGenericType)) {
+				return elementFactory.createList(fragmentTypeOf(listGenericType), locator, fieldName);
+			}
+		}
 
-    private static Class<? extends Fragment> fragmentTypeOf(Class aClass) {
-        if (Fragment.class.isAssignableFrom(aClass)) {
-            return aClass;
-        } else if (WebElement.class.isAssignableFrom(aClass)) {
-            return Fragment.class;
-        } else {
-            throw new IllegalArgumentException(String.format("Cannot determine type of fragment for [%s]", aClass));
-        }
-    }
+		return null;
+	}
 
-    private static Class fieldGenericType(Field field) {
-        Type type = field.getGenericType();
+	private static boolean isFragmentCompatible(Class aClass) {
+		return Fragment.class.isAssignableFrom(aClass) || WebElement.class.isAssignableFrom(aClass);
+	}
 
-        if (type instanceof ParameterizedType) {
-            Type typeArgument = ((ParameterizedType) type).getActualTypeArguments()[0];
+	private static Class<? extends Fragment> fragmentTypeOf(Class aClass) {
+		if (Fragment.class.isAssignableFrom(aClass)) {
+			return aClass;
+		} else if (WebElement.class.isAssignableFrom(aClass)) {
+			return Fragment.class;
+		} else {
+			throw new IllegalArgumentException(String.format("Cannot determine type of fragment for [%s]", aClass));
+		}
+	}
 
-            if (typeArgument instanceof Class) {
-                return (Class) typeArgument;
-            }
-
-            if (typeArgument instanceof ParameterizedType) {
-                return (Class) ((ParameterizedType) typeArgument).getRawType();
-            }
-
-            return null;
-        }
-
-        return field.getType();
-    }
 }
