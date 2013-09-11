@@ -9,33 +9,37 @@ import java.util.List;
 
 public class Formatter {
 
-	private final ToStringConverter converter;
+    private final ToStringConverter converter;
 
-	public Formatter(ToStringConverter converter) {
-		this.converter = converter;
-	}
+    public Formatter(ToStringConverter converter) {
+        this.converter = converter;
+    }
 
-	public String format(String formattingString, StringTransformer... transformers) {
-		return format(formattingString, Arrays.asList(transformers));
-	}
+    public Formatter() {
+        this(new DefaultToStringConverter());
+    }
 
-	public String format(String formattingString, List<StringTransformer> transformers) {
-		List<Transformation> transformations = new ArrayList<>();
+    public String format(String formattingString, StringTransformer... transformers) {
+        return format(formattingString, Arrays.asList(transformers));
+    }
 
-		for (StringTransformer transformer : transformers) {
-			transformations.addAll(transformer.transform(formattingString, converter));
-		}
+    public String format(String formattingString, List<StringTransformer> transformers) {
+        List<Transformation> transformations = new ArrayList<>();
 
-		StringBuilder stringBuilder = new StringBuilder(formattingString);
+        for (StringTransformer transformer : transformers) {
+            transformations.addAll(transformer.transform(formattingString, converter));
+        }
 
-		int shift = 0;
+        StringBuilder stringBuilder = new StringBuilder(formattingString);
 
-		for (Transformation transformation : transformations) {
-			stringBuilder.replace(transformation.start() + shift, transformation.end() + shift, transformation.content());
-			shift += transformation.shift();
-		}
+        int shift = 0;
 
-		return stringBuilder.toString();
-	}
+        for (Transformation transformation : transformations) {
+            stringBuilder.replace(transformation.start() + shift, transformation.end() + shift, transformation.content());
+            shift += transformation.shift();
+        }
+
+        return stringBuilder.toString();
+    }
 
 }
