@@ -25,6 +25,7 @@ public final class ByExtractorService extends IteratingByExtractor {
         final LocatorParser<FindBy> findByParser = FinByParser.getInstance();
 
         Deque<ByExtractor> extractors = new ArrayDeque<>();
+        extractors.addLast(new FromFindAll(findByParser));
         extractors.addLast(new FromFindBys(findByParser));
         extractors.addLast(new FromFindBy(findByParser));
         extractors.addLast(new FromFieldName());

@@ -6,7 +6,7 @@
 
     <groupId>com.astound</groupId>
     <artifactId>fragments</artifactId>
-    <version>1.4</version>
+    <version>1.3</version>
     <packaging>jar</packaging>
 
     <dependencies>
