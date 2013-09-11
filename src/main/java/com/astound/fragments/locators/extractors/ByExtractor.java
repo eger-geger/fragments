@@ -7,6 +7,6 @@ import java.lang.reflect.Field;
 
 public interface ByExtractor {
 
-    public Optional<? extends By> extract(Field field);
+    public Optional<By> extract(Field field);
 
 }
