@@ -1,23 +1,19 @@
 package com.astound.fragments.elements;
 
-import com.astound.fragments.FragmentContext;
+import com.astound.fragments.context.FragmentContext;
 import com.astound.fragments.events.EventType;
 import com.astound.fragments.events.Publish;
-import com.astound.fragments.proxy.ElementLazyLoader;
 import com.astound.fragments.utils.JSActions;
 import com.google.common.base.Predicate;
 import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.internal.WrapsElement;
-import org.openqa.selenium.support.pagefactory.ElementLocator;
 import org.openqa.selenium.support.ui.FluentWait;
 
-import java.lang.reflect.InvocationHandler;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static com.astound.fragments.utils.XPathFunctions.containstext;
-import static java.lang.reflect.Proxy.newProxyInstance;
 
 public class Fragment implements WebElement, WrapsElement, FragmentContext {
 
@@ -37,27 +33,13 @@ public class Fragment implements WebElement, WrapsElement, FragmentContext {
 
     public Fragment(FragmentContext fragmentContext) {
         wrappedContext = fragmentContext;
-        wrappedElement = lazyLoadedRoot(fragmentContext);
+        wrappedElement = fragmentContext.getRootElement();
         jsActions = new JSActions(this);
     }
 
-    private static WebElement lazyLoadedRoot(final SearchContext searchContext) {
-        ClassLoader classLoader = searchContext.getClass().getClassLoader();
-
-        InvocationHandler invocationHandler = new ElementLazyLoader(new ElementLocator() {
-            @Override public WebElement findElement() {
-                return searchContext instanceof WebElement
-                        ? (WebElement) searchContext
-                        : searchContext.findElement(By.xpath("."));
-            }
-
-            @Override public List<WebElement> findElements() { return null; }
-        });
-
-        return (WebElement) newProxyInstance(classLoader, new Class[]{WebElement.class, WrapsElement.class}, invocationHandler);
-    }
-
     @Override public String getName() {return wrappedContext.getName();}
+
+    @Override public WebElement getRootElement() { return wrappedElement; }
 
     @Override public Fragment findFragment(By by) {return wrappedContext.findFragment(by);}
 
@@ -84,10 +66,10 @@ public class Fragment implements WebElement, WrapsElement, FragmentContext {
     @Override public Object executeAsyncScript(String script, Object... args) {return wrappedContext.executeAsyncScript(script, args);}
 
     @Publish(format = "element HTML is [{return}]", type = EventType.WEB_DRIVER_EVENT)
-    public String getHtml() { return jsActions.getHtml(getWrappedElement()); }
+    public String getHtml() { return jsActions.getProperty(getWrappedElement(), "innerHTML"); }
 
     @Publish(format = "element text content is [{return}]", type = EventType.WEB_DRIVER_EVENT)
-    public String getTextContent() { return jsActions.getTextContent(getWrappedElement()); }
+    public String getTextContent() { return jsActions.getProperty(getWrappedElement(), "textContent"); }
 
     @Publish(format = "element normalized content is [{return}]", type = EventType.WEB_DRIVER_EVENT)
     public String getNormalizedTextContent() { return StringUtils.normalizeSpace(getTextContent()); }

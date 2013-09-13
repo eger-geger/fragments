@@ -15,55 +15,63 @@ import static com.astound.fragments.utils.ReflectionUtils.getFieldGenericType;
 
 public class FragmentDecorator implements FieldDecorator {
 
-	private final ElementLocatorFactory locatorFactory;
+    private final ElementLocatorFactory locatorFactory;
 
-	private final FragmentFactory elementFactory;
+    private final FragmentFactory elementFactory;
 
-	private final FieldNameResolver fieldNameResolver;
+    private final FieldNameResolver fieldNameResolver;
 
-	public FragmentDecorator(ElementLocatorFactory locatorFactory, FragmentFactory elementFactory, FieldNameResolver fieldNameResolver) {
-		this.locatorFactory = locatorFactory;
-		this.elementFactory = elementFactory;
-		this.fieldNameResolver = fieldNameResolver;
-	}
+    public FragmentDecorator(ElementLocatorFactory locatorFactory, FragmentFactory elementFactory, FieldNameResolver fieldNameResolver) {
+        this.locatorFactory = locatorFactory;
+        this.elementFactory = elementFactory;
+        this.fieldNameResolver = fieldNameResolver;
+    }
 
-	public FragmentDecorator(ElementLocatorFactory locatorFactory, FragmentFactory elementFactory) {
-		this(locatorFactory, elementFactory, new DefaultFieldNameResolver());
-	}
+    public FragmentDecorator(ElementLocatorFactory locatorFactory, FragmentFactory elementFactory) {
+        this(locatorFactory, elementFactory, new DefaultFieldNameResolver());
+    }
 
-	@Override public Object decorate(ClassLoader classLoader, Field field) {
-		Class fieldType = field.getType();
-		String fieldName = fieldNameResolver.resolveName(field);
+    @Override public Object decorate(ClassLoader classLoader, Field field) {
+        Class fieldType = field.getType();
+        String fieldName = fieldNameResolver.resolveName(field);
 
-		ElementLocator locator = locatorFactory.createLocator(field);
+        ElementLocator locator = locatorFactory.createLocator(field);
 
-		if (isFragmentCompatible(fieldType)) {
-			return elementFactory.createFragment(fragmentTypeOf(fieldType), locator, fieldName);
-		}
+        if (isFragmentCompatible(fieldType)) {
+            Class<? extends Fragment> fClass = fragmentTypeOf(fieldType);
 
-		if (List.class.isAssignableFrom(fieldType)) {
-			Class listGenericType = getFieldGenericType(field);
+            return isFrame(field)
+                    ? elementFactory.createFrame(fClass, locator, fieldName)
+                    : elementFactory.createFragment(fClass, locator, fieldName);
+        }
 
-			if (isFragmentCompatible(listGenericType)) {
-				return elementFactory.createList(fragmentTypeOf(listGenericType), locator, fieldName);
-			}
-		}
+        if (List.class.isAssignableFrom(fieldType)) {
+            Class listGenericType = getFieldGenericType(field);
 
-		return null;
-	}
+            if (isFragmentCompatible(listGenericType)) {
+                return elementFactory.createList(fragmentTypeOf(listGenericType), locator, fieldName);
+            }
+        }
 
-	private static boolean isFragmentCompatible(Class aClass) {
-		return Fragment.class.isAssignableFrom(aClass) || WebElement.class.isAssignableFrom(aClass);
-	}
+        return null;
+    }
 
-	private static Class<? extends Fragment> fragmentTypeOf(Class aClass) {
-		if (Fragment.class.isAssignableFrom(aClass)) {
-			return aClass;
-		} else if (WebElement.class.isAssignableFrom(aClass)) {
-			return Fragment.class;
-		} else {
-			throw new IllegalArgumentException(String.format("Cannot determine type of fragment for [%s]", aClass));
-		}
-	}
+    private static boolean isFragmentCompatible(Class aClass) {
+        return Fragment.class.isAssignableFrom(aClass) || WebElement.class.isAssignableFrom(aClass);
+    }
+
+    private static boolean isFrame(Field field) {
+        return field.isAnnotationPresent(Frame.class) || field.getType().isAnnotationPresent(Frame.class);
+    }
+
+    private static Class<? extends Fragment> fragmentTypeOf(Class aClass) {
+        if (Fragment.class.isAssignableFrom(aClass)) {
+            return aClass;
+        } else if (WebElement.class.isAssignableFrom(aClass)) {
+            return Fragment.class;
+        } else {
+            throw new IllegalArgumentException(String.format("Cannot determine type of fragment for [%s]", aClass));
+        }
+    }
 
 }

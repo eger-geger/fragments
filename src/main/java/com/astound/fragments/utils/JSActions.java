@@ -15,14 +15,6 @@ public class JSActions {
         jsExecutor.executeScript("arguments[0].click()", webElement);
     }
 
-    public String getTextContent(WebElement webElement) {
-        return (String) jsExecutor.executeScript("return arguments[0].textContent", webElement);
-    }
-
-    public String getHtml(WebElement webElement) {
-        return (String) jsExecutor.executeScript("return arguments[0].innerHTML", webElement);
-    }
-
     public String toString(WebElement webElement) {
         return (String) jsExecutor.executeScript("return arguments[0].toString()", webElement);
     }

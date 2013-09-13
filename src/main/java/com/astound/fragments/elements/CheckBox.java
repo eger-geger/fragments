@@ -1,6 +1,6 @@
 package com.astound.fragments.elements;
 
-import com.astound.fragments.FragmentContext;
+import com.astound.fragments.context.FragmentContext;
 import com.astound.fragments.events.EventType;
 import com.astound.fragments.events.Publish;
 import com.google.common.base.Predicate;

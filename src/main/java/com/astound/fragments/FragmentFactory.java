@@ -1,5 +1,8 @@
 package com.astound.fragments;
 
+import com.astound.fragments.context.DefaultContext;
+import com.astound.fragments.context.FragmentContext;
+import com.astound.fragments.context.FrameContext;
 import com.astound.fragments.elements.Fragment;
 import com.astound.fragments.events.PublisherFactory;
 import com.astound.fragments.locators.FragmentLocatorFactory;
@@ -7,6 +10,7 @@ import com.astound.fragments.proxy.ElementLazyLoader;
 import com.astound.fragments.proxy.ListLazyLoader;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.SearchContext;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.internal.WrapsElement;
 import org.openqa.selenium.support.pagefactory.ElementLocator;
@@ -25,31 +29,42 @@ public class FragmentFactory {
 
     private final ClassLoader classLoader;
 
-    private final JavascriptExecutor jsExecutor;
+    private final WebDriver webDriver;
 
     private final PublisherFactory publisherFactory;
 
-    public FragmentFactory(JavascriptExecutor jsExecutor) {
+    public FragmentFactory(WebDriver webDriver) {
         classLoader = getClass().getClassLoader();
         publisherFactory = new PublisherFactory();
-        this.jsExecutor = jsExecutor;
-
+        this.webDriver = webDriver;
     }
 
     public <F extends Fragment> F createFragment(Class<F> aClass, ElementLocator locator, String name) {
-        F fragment = newFragment(aClass, createNamedArea(createWebElementProxy(locator), name));
+        F fragment = newFragment(aClass, createDefaultContext(createWebElementProxy(locator), name));
 
         initFragmentsIn(fragment);
 
         return fragment;
     }
 
-    public FragmentContext createNamedArea(SearchContext searchContext, String name) {
-        return new FragmentContextSupport(searchContext, jsExecutor, this, name);
+    public <F extends Fragment> F createFrame(Class<F> fClass, ElementLocator locator, String name) {
+        F fragment = newFragment(fClass, createFrameContext(createFragment(Fragment.class, locator, name), name));
+
+        initFragmentsIn(fragment);
+
+        return fragment;
     }
 
-    private <T extends Fragment> T newFragment(Class<T> aClass, FragmentContext fragmentContext) {
-        return publisherFactory.createPublishingInstance(aClass, new Class[]{FragmentContext.class}, fragmentContext);
+    public FragmentContext createFrameContext(WebElement frameWebElement, String name) {
+        return new FrameContext(frameWebElement, webDriver, this, name);
+    }
+
+    public FragmentContext createDefaultContext(SearchContext searchContext, String name) {
+        return new DefaultContext(searchContext, (JavascriptExecutor) webDriver, this, name);
+    }
+
+    private <F extends Fragment> F newFragment(Class<F> fClass, FragmentContext fragmentContext) {
+        return publisherFactory.createPublishingInstance(fClass, new Class[]{FragmentContext.class}, fragmentContext);
     }
 
     public <F extends Fragment> List<F> createList(Class<F> aClass, ElementLocator locator, String name) {
