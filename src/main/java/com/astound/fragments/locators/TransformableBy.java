@@ -44,6 +44,10 @@ public class TransformableBy extends By {
         return buildBy(how, using).findElements(context);
     }
 
+    @Override public String toString() {
+        return String.format("By.%s: %s", how, using);
+    }
+
     private static By buildBy(How how, String locator) {
         switch (how) {
             case CLASS_NAME:
