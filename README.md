@@ -115,154 +115,12 @@ public class PageWithFragments implements FragmentContext {
 
 Supported element annotations:
 
-1. Native: `@FindBy`, `package com.astound.fragments.pages;
-
-import com.astound.fragments.FragmentFactory;
-import com.astound.fragments.context.FragmentContext;
-import com.astound.fragments.elements.Fragment;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-
-import java.util.List;
-
-public class BasePage implements FragmentContext {
-
-    private final FragmentContext context;
-
-    public BasePage(WebDriver webDriver) {
-        String contextName = getClass().getSuperclass().getName();
-
-        FragmentFactory fragmentFactory = new FragmentFactory(webDriver);
-        context = fragmentFactory.createDefaultContext(webDriver, contextName);
-        fragmentFactory.initFragmentsIn(this);
-    }
-
-    @Override public String getName() {
-        return context.getName();
-    }
-
-    @Override public WebElement getRootElement() {
-        return context.getRootElement();
-    }
-
-    @Override public Fragment findFragment(By by) {
-        return context.findFragment(by);
-    }
-
-    @Override public List<Fragment> findFragments(By by) {
-        return context.findFragments(by);
-    }
-
-    @Override public <E extends Fragment> E findFragment(By by, Class<E> aClass) {
-        return context.findFragment(by, aClass);
-    }
-
-    @Override public <E extends Fragment> List<E> findFragments(By by, Class<E> aClass) {
-        return context.findFragments(by, aClass);
-    }
-
-    @Override public <E extends Fragment> E findFragment(By by, Class<E> aClass, String name) {
-        return context.findFragment(by, aClass, name);
-    }
-
-    @Override public <E extends Fragment> List<E> findFragments(By by, Class<E> aClass, String name) {
-        return context.findFragments(by, aClass, name);
-    }
-
-    @Override public List<WebElement> findElements(By by) {
-        return context.findElements(by);
-    }
-
-    @Override public WebElement findElement(By by) {
-        return context.findElement(by);
-    }
-
-    @Override public Object executeScript(String s, Object... objects) {
-        return context.executeScript(s, objects);
-    }
-
-    @Override public Object executeAsyncScript(String s, Object... objects) {
-        return context.executeAsyncScript(s, objects);
-    }
-
-}@FindByAll`, `@FindBys`
+1. Native: `@FindBy`, `@FindByAll`, `@FindBys`
 2. Custom: `@Frame`
 
 Page which is going to support fragments initialization should implement `FragmentContext`.
 
-There are 3 options:   package com.astound.fragments.pages;
-
-import com.astound.fragments.FragmentFactory;
-import com.astound.fragments.context.FragmentContext;
-import com.astound.fragments.elements.Fragment;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-
-import java.util.List;
-
-public class BasePage implements FragmentContext {
-
-    private final FragmentContext context;
-
-    public BasePage(WebDriver webDriver) {
-        String contextName = getClass().getSuperclass().getName();
-
-        FragmentFactory fragmentFactory = new FragmentFactory(webDriver);
-        context = fragmentFactory.createDefaultContext(webDriver, contextName);
-        fragmentFactory.initFragmentsIn(this);
-    }
-
-    @Override public String getName() {
-        return context.getName();
-    }
-
-    @Override public WebElement getRootElement() {
-        return context.getRootElement();
-    }
-
-    @Override public Fragment findFragment(By by) {
-        return context.findFragment(by);
-    }
-
-    @Override public List<Fragment> findFragments(By by) {
-        return context.findFragments(by);
-    }
-
-    @Override public <E extends Fragment> E findFragment(By by, Class<E> aClass) {
-        return context.findFragment(by, aClass);
-    }
-
-    @Override public <E extends Fragment> List<E> findFragments(By by, Class<E> aClass) {
-        return context.findFragments(by, aClass);
-    }
-
-    @Override public <E extends Fragment> E findFragment(By by, Class<E> aClass, String name) {
-        return context.findFragment(by, aClass, name);
-    }
-
-    @Override public <E extends Fragment> List<E> findFragments(By by, Class<E> aClass, String name) {
-        return context.findFragments(by, aClass, name);
-    }
-
-    @Override public List<WebElement> findElements(By by) {
-        return context.findElements(by);
-    }
-
-    @Override public WebElement findElement(By by) {
-        return context.findElement(by);
-    }
-
-    @Override public Object executeScript(String s, Object... objects) {
-        return context.executeScript(s, objects);
-    }
-
-    @Override public Object executeAsyncScript(String s, Object... objects) {
-        return context.executeAsyncScript(s, objects);
-    }
-
-}
+There are 3 options:
 
 1. Implement interface by hand
 2. Delegate to new instance of `DefaultFragmentContext`
@@ -343,38 +201,38 @@ Fragment may contain any other web elements or fragments definitions.
 Mark element with `@Frame` annotation and use subclass of `FrameHandler` to define action
 
 ```java
-    import com.astound.fragments.Frame;
-    import com.astound.fragments.FrameHandler;
-    import com.astound.fragments.elements.Fragment;
-    import org.openqa.selenium.WebDriver;
-    import org.openqa.selenium.support.FindBy;
+import com.astound.fragments.Frame;
+import com.astound.fragments.FrameHandler;
+import com.astound.fragments.elements.Fragment;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.support.FindBy;
 
-    public class PageWithFrame extends BasePage {
+public class PageWithFrame extends BasePage {
 
-        @FindBy(id = "frameId")
-        @Frame private Fragment frameFragment;
+    @FindBy(id = "frameId")
+    @Frame private Fragment frameFragment;
 
-        public PageWithFrame(WebDriver webDriver) {
-            super(webDriver);
-        }
-
-        public void doWithLocalFrameHandler(){
-            new LocalFrameHandler<Fragment>(){
-                @Override protected void doPerform(Fragment frame) {
-                    //Perform some actions within frame here
-                }
-            }.perform(frameFragment);   // And provide frame
-        }
-
-        public void doWithFrameHandler(){
-            new FrameHandler<Fragment>(webDriver){
-                @Override protected void doPerform(Fragment frame) {
-                    //Perform some actions within frame here.
-                }
-            }.perform(frameFragment);   //And provide frame
-        }
-
+    public PageWithFrame(WebDriver webDriver) {
+        super(webDriver);
     }
+
+    public void doWithLocalFrameHandler(){
+        new LocalFrameHandler<Fragment>(){
+            @Override protected void doPerform(Fragment frame) {
+                //Perform some actions within frame here
+            }
+        }.perform(frameFragment);   // And provide frame
+    }
+
+    public void doWithFrameHandler(){
+        new FrameHandler<Fragment>(webDriver){
+            @Override protected void doPerform(Fragment frame) {
+                //Perform some actions within frame here.
+            }
+        }.perform(frameFragment);   //And provide frame
+    }
+
+}
 ```
 
 ## Custom Element Locating
