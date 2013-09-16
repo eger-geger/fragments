@@ -1,4 +1,5 @@
 # Fragments
+
 Define complex page object as a set of smaller components.
 
 ## Define Page with fragments
@@ -192,9 +193,7 @@ public class CollapsibleMenu extends Fragment {
 }
 ```
 
-Custom fragments should extend other fragment and provide visible constructor which takes `FragmentContext` as argument.
-
-Fragment may contain any other web elements or fragments definitions.
+Custom fragments should extend other fragment and provide visible constructor which takes `FragmentContext` as argument. Fragment may contain any other web elements or fragments definitions.
 
 ## Frame handling
 
