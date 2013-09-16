@@ -1,12 +1,7 @@
 # Fragments
 Define complex page object as a set of smaller components.
 
-* [Define Page with fragments][define]
-* [Init fragments][init_fragments]
-* [Custom fragments][custom_fragments]
-* [Frame handling][frame_handling]
-
-[define_page]: ##Define Page with fragments
+## Define Page with fragments
 
 ```java
 public class WikiHomePage extends WikiPage {
@@ -23,7 +18,7 @@ public class WikiHomePage extends WikiPage {
 }
 ```
 
-[init_fragments]:##Init fragments
+## Init Fragments
 
 ```java
 package com.astound.fragments.pages;
@@ -42,36 +37,60 @@ public class BasePage implements FragmentContext {
     private final FragmentContext context;
 
     public BasePage(WebDriver webDriver) {
+        String contextName = getClass().getSuperclass().getName();
+
         FragmentFactory fragmentFactory = new FragmentFactory(webDriver);
-        context = fragmentFactory.createDefaultContext(webDriver, getClass().getSuperclass().getName());
+        context = fragmentFactory.createDefaultContext(webDriver, contextName);
         fragmentFactory.initFragmentsIn(this);
     }
 
-    @Override public String getName() {return context.getName();}
+    @Override public String getName() {
+        return context.getName();
+    }
 
     @Override public WebElement getRootElement() {
         return context.getRootElement();
     }
 
-    @Override public Fragment findFragment(By by) {return context.findFragment(by);}
+    @Override public Fragment findFragment(By by) {
+        return context.findFragment(by);
+    }
 
-    @Override public List<Fragment> findFragments(By by) {return context.findFragments(by);}
+    @Override public List<Fragment> findFragments(By by) {
+        return context.findFragments(by);
+    }
 
-    @Override public <E extends Fragment> E findFragment(By by, Class<E> aClass) {return context.findFragment(by, aClass);}
+    @Override public <E extends Fragment> E findFragment(By by, Class<E> aClass) {
+        return context.findFragment(by, aClass);
+    }
 
-    @Override public <E extends Fragment> List<E> findFragments(By by, Class<E> aClass) {return context.findFragments(by, aClass);}
+    @Override public <E extends Fragment> List<E> findFragments(By by, Class<E> aClass) {
+        return context.findFragments(by, aClass);
+    }
 
-    @Override public <E extends Fragment> E findFragment(By by, Class<E> aClass, String name) {return context.findFragment(by, aClass, name);}
+    @Override public <E extends Fragment> E findFragment(By by, Class<E> aClass, String name) {
+        return context.findFragment(by, aClass, name);
+    }
 
-    @Override public <E extends Fragment> List<E> findFragments(By by, Class<E> aClass, String name) {return context.findFragments(by, aClass, name);}
+    @Override public <E extends Fragment> List<E> findFragments(By by, Class<E> aClass, String name) {
+        return context.findFragments(by, aClass, name);
+    }
 
-    @Override public List<WebElement> findElements(By by) {return context.findElements(by);}
+    @Override public List<WebElement> findElements(By by) {
+        return context.findElements(by);
+    }
 
-    @Override public WebElement findElement(By by) {return context.findElement(by);}
+    @Override public WebElement findElement(By by) {
+        return context.findElement(by);
+    }
 
-    @Override public Object executeScript(String s, Object... objects) {return context.executeScript(s, objects);}
+    @Override public Object executeScript(String s, Object... objects) {
+        return context.executeScript(s, objects);
+    }
 
-    @Override public Object executeAsyncScript(String s, Object... objects) {return context.executeAsyncScript(s, objects);}
+    @Override public Object executeAsyncScript(String s, Object... objects) {
+        return context.executeAsyncScript(s, objects);
+    }
 
 }
 ```
@@ -89,7 +108,7 @@ There are 3 options:
 2. Delegate to new instance of `DefaultFragmentContext`
 3. Use `FragmentFactory` to create `DefaultFragmentContext`
 
-[custom_fragments]:##Custom fragments
+## Custom Fragments
 
 ```java
 import com.astound.fragments.context.FragmentContext;
@@ -125,7 +144,9 @@ public class CollapsibleMenu extends Fragment {
             headerToggle.jsClick();
 
             waitUntil(5, new Predicate<WebElement>() {
-                @Override public boolean apply(WebElement input) { return isOpened(); }
+                @Override public boolean apply(WebElement input) {
+                    return isOpened();
+                }
             });
         }
     }
@@ -135,7 +156,9 @@ public class CollapsibleMenu extends Fragment {
             headerToggle.click();
 
             waitUntil(5, new Predicate<WebElement>() {
-                @Override public boolean apply(WebElement input) { return isClosed(); }
+                @Override public boolean apply(WebElement input) {
+                    return isClosed();
+                }
             });
         }
     }
@@ -192,4 +215,12 @@ Mark element with `@Frame` annotation and use subclass of `FrameHandler` to defi
 
     }
 ```
+
+## Custom Element Locating
+
+//TODO
+
+## Event Publishing
+
+//TODO
 
