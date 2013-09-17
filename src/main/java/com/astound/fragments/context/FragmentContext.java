@@ -8,6 +8,7 @@ import org.openqa.selenium.WebElement;
 
 import java.util.List;
 
+/** Named page area which supports javascript execution, locating elements and fragments. */
 public interface FragmentContext extends SearchContext, JavascriptExecutor {
 
     public String getName();

@@ -13,6 +13,7 @@ import java.util.List;
 
 import static com.astound.fragments.utils.ReflectionUtils.getFieldGenericType;
 
+/** Decorates {@code}WebElement{@code} and {@code}List<WebElement>{@code} fields */
 public class FragmentDecorator implements FieldDecorator {
 
     private final ElementLocatorFactory locatorFactory;

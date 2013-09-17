@@ -15,6 +15,7 @@ import static java.lang.reflect.Proxy.newProxyInstance;
 
 public class DefaultContext implements FragmentContext {
 
+    /** Delegates element locating to underlying search context */
     private class DelegatingElementLocator implements ElementLocator {
 
         private final By by;

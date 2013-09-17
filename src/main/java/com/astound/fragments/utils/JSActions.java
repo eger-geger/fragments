@@ -3,6 +3,7 @@ package com.astound.fragments.utils;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 
+/** Executes javascript on webelements */
 public class JSActions {
 
     private final JavascriptExecutor jsExecutor;

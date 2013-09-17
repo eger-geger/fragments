@@ -11,6 +11,7 @@ import java.lang.reflect.UndeclaredThrowableException;
 
 import static com.astound.fragments.utils.StackTraceCleaner.cleanStackTrace;
 
+/** Locates and caches element. Cash is updated if element triggers {@link StaleElementReferenceException} */
 public class ElementLazyLoader implements InvocationHandler {
 
     private final static String M_GET_WRAPPED = "getWrappedElement";

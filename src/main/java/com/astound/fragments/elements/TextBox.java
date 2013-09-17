@@ -48,11 +48,11 @@ public class TextBox extends Fragment {
     }
 
     public boolean isEmpty() {
-        return StringUtils.isBlank(getAttribute("value"));
+        return StringUtils.isBlank(getAttributeValue());
     }
 
     public int getCharCount() {
-        return getAttribute("value").length();
+        return getAttributeValue().length();
     }
 
 }

@@ -21,7 +21,8 @@ import java.util.List;
 import static com.astound.fragments.utils.ReflectionUtils.assignField;
 import static java.lang.reflect.Proxy.newProxyInstance;
 
-public class FragmentFactory {
+/** Creates fragments and initialized their inner elements */
+public final class FragmentFactory {
 
     private static final Class[] FRAGMENT_LIST_INTERFACES = new Class[]{List.class};
 
@@ -55,9 +56,12 @@ public class FragmentFactory {
         return fragment;
     }
 
-    public FragmentContext createFrameContext(WebElement frameWebElement, String name) {
+    private FragmentContext createFrameContext(WebElement frameWebElement, String name) {
         return new FrameContext(frameWebElement, webDriver, this, name);
     }
+
+    /** Create fragment instance of given type and init */
+
 
     public FragmentContext createDefaultContext(SearchContext searchContext, String name) {
         return new DefaultContext(searchContext, (JavascriptExecutor) webDriver, this, name);

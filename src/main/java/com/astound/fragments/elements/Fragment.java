@@ -65,6 +65,8 @@ public class Fragment implements WebElement, WrapsElement, FragmentContext {
 
     @Override public Object executeAsyncScript(String script, Object... args) {return wrappedContext.executeAsyncScript(script, args);}
 
+    public String getAttributeValue() { return getAttribute("value"); }
+
     @Publish(format = "element HTML is [{return}]", type = EventType.WEB_DRIVER_EVENT)
     public String getHtml() { return jsActions.getProperty(getWrappedElement(), "innerHTML"); }
 

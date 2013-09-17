@@ -15,6 +15,7 @@ import java.util.List;
 
 import static com.astound.fragments.utils.StackTraceCleaner.cleanStackTrace;
 
+/** Performs list elements locating and cashing of located elements. Cash is updated if newly located list size differs from cashed list size */
 public class ListLazyLoader<F extends Fragment> implements InvocationHandler {
 
     private final FragmentFactory fragmentFactory;

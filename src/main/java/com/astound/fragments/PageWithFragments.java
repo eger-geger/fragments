@@ -8,6 +8,7 @@ import org.openqa.selenium.WebElement;
 
 import java.util.List;
 
+/** Helper class for pages. Extends this and use fragments. */
 public class PageWithFragments implements FragmentContext {
 
     protected final WebDriver webDriver;
@@ -84,6 +85,7 @@ public class PageWithFragments implements FragmentContext {
         return context.executeAsyncScript(s, objects);
     }
 
+    /** {@link FrameHandler} which uses #webDriver */
     protected abstract class LocalFrameHandler<T extends Fragment> extends FrameHandler<T> {
         public LocalFrameHandler() { super(webDriver); }
     }
